@@ -1,4 +1,4 @@
-import { ORFunctionDescription } from '../shared/openRouterTypes'
+import { ORFunctionDescription } from '../../shared/openRouterTypes'
 
 export type DandisetDetailsParams = {
   dandisetId: string
@@ -31,7 +31,7 @@ type DandisetVersionSpecificDetails = {
   description: string
 }
 
-export const dandisetDetailsTool: ORFunctionDescription = {
+export const toolFunction: ORFunctionDescription = {
   name: 'dandiset_details',
   description: 'Get detailed information about a specific dandiset by ID',
   parameters: {
@@ -46,7 +46,7 @@ export const dandisetDetailsTool: ORFunctionDescription = {
   }
 }
 
-export const executeDandisetDetails = async (params: DandisetDetailsParams): Promise<string> => {
+export const execute = async (params: DandisetDetailsParams): Promise<string> => {
   try {
     const response = await fetch(
       `https://api.dandiarchive.org/api/dandisets/${params.dandisetId}/`,
@@ -112,3 +112,23 @@ export const executeDandisetDetails = async (params: DandisetDetailsParams): Pro
     return 'An unknown error occurred while fetching dandiset details'
   }
 }
+
+export const detailedDescription = `
+The dandiset_details tool retrieves comprehensive information about a specific dataset.
+
+WHEN TO USE:
+- After finding an interesting dataset through search
+- When detailed metadata about a dataset is needed
+
+BEST PRACTICES:
+- Use after identifying potentially relevant datasets
+
+RETURNS:
+A JSON string containing detailed dataset information including:
+- Basic metadata (identifier, name, dates)
+- Contributors and roles
+- License information
+- Version-specific details (asset count, size, status)
+- Contact person and embargo status
+- Description of the dataset
+`

@@ -1,4 +1,4 @@
-import { ORFunctionDescription } from '../shared/openRouterTypes'
+import { ORFunctionDescription } from '../../shared/openRouterTypes'
 
 export type DandisetFilesParams = {
   dandisetId: string
@@ -18,7 +18,7 @@ type DandiAssetResponse = {
   size: number
 }
 
-export const dandisetFilesTool: ORFunctionDescription = {
+export const toolFunction: ORFunctionDescription = {
   name: 'dandiset_files',
   description: 'Get a list of files in a dandiset',
   parameters: {
@@ -43,7 +43,7 @@ export const dandisetFilesTool: ORFunctionDescription = {
   }
 }
 
-export const executeDandisetFiles = async (params: DandisetFilesParams): Promise<string> => {
+export const execute = async (params: DandisetFilesParams): Promise<string> => {
   try {
     // First get the version info
     const response1 = await fetch(
@@ -97,3 +97,20 @@ export const executeDandisetFiles = async (params: DandisetFilesParams): Promise
     return 'An unknown error occurred while fetching dandiset files'
   }
 }
+
+export const detailedDescription = `
+The dandiset_files tool lists files contained within a specific dataset.
+
+WHEN TO USE:
+- To explore the contents of a dataset
+- To find specific file types using glob patterns
+
+BEST PRACTICES:
+- Use glob patterns to filter for specific file types
+- Start with a smaller pageSize to verify content
+
+RETURNS:
+A JSON string containing:
+- count: Total number of files matching criteria
+- files: Array of file information including paths, sizes, and URLs
+`

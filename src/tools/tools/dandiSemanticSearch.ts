@@ -1,4 +1,4 @@
-import { ORFunctionDescription } from '../shared/openRouterTypes'
+import { ORFunctionDescription } from '../../shared/openRouterTypes'
 import { DandisetBasicInfo } from './dandiSearch'
 
 export type DandiSemanticSearchParams = {
@@ -6,7 +6,7 @@ export type DandiSemanticSearchParams = {
   limit?: number
 }
 
-export const dandiSemanticSearchTool: ORFunctionDescription = {
+export const toolFunction: ORFunctionDescription = {
   name: 'dandi_semantic_search',
   description: 'Search for dandisets on DANDI archive using semantic search (finds similar dandisets based on description)',
   parameters: {
@@ -27,7 +27,7 @@ export const dandiSemanticSearchTool: ORFunctionDescription = {
   }
 }
 
-export const executeDandiSemanticSearch = async (params: DandiSemanticSearchParams): Promise<string> => {
+export const execute = async (params: DandiSemanticSearchParams): Promise<string> => {
   const limit = params.limit || 10
 
   try {
@@ -103,3 +103,23 @@ export const executeDandiSemanticSearch = async (params: DandiSemanticSearchPara
     return 'An unknown error occurred while performing semantic search'
   }
 }
+
+export const detailedDescription = `
+The dandi_semantic_search tool finds datasets that are conceptually similar to a text query using semantic search.
+
+WHEN TO USE:
+- To find datasets similar to a concept or description
+- When keyword search isn't finding relevant results
+- To discover related datasets based on content
+- For exploratory research in a particular domain
+
+BEST PRACTICES:
+- Use natural language descriptions in queries
+- Be specific about the research concepts you're interested in
+- Use domain-specific terminology when applicable
+
+RETURNS:
+A JSON string containing:
+- total: Total number of semantically similar datasets found
+- results: Array of matching datasets with basic information
+`

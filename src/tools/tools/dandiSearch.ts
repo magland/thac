@@ -1,4 +1,4 @@
-import { ORFunctionDescription } from '../shared/openRouterTypes'
+import { ORFunctionDescription } from '../../shared/openRouterTypes'
 
 export type DandiSearchParams = {
   searchQuery?: string
@@ -16,7 +16,7 @@ export type DandisetBasicInfo = {
   description?: string
 }
 
-export const dandiSearchTool: ORFunctionDescription = {
+export const toolFunction: ORFunctionDescription = {
   name: 'dandi_search',
   description: 'Search for dandisets on DANDI archive and return basic information about each',
   parameters: {
@@ -41,7 +41,7 @@ export const dandiSearchTool: ORFunctionDescription = {
   }
 }
 
-export const executeDandiSearch = async (params: DandiSearchParams): Promise<string> => {
+export const execute = async (params: DandiSearchParams): Promise<string> => {
   const limit = params.limit || 10
   const searchQuery = params.searchQuery || ''
   const includeEmbargoed = params.includeEmbargoed || false
@@ -100,3 +100,20 @@ export const executeDandiSearch = async (params: DandiSearchParams): Promise<str
     return 'An unknown error occurred while searching DANDI archive'
   }
 }
+
+export const detailedDescription = `
+The dandi_search tool provides a way to search and browse datasets in the DANDI archive using text-based search.
+
+WHEN TO USE:
+- To find datasets matching specific keywords or terms
+- To discover datasets without requiring semantic similarity
+
+BEST PRACTICES:
+- Use the limit parameter to control result size (default 10, max 50)
+- Combine with dandiset_details for more information about interesting results
+
+RETURNS:
+A JSON string containing:
+- total: Total number of matching datasets
+- results: Array of basic dataset information including identifiers, names, sizes
+`

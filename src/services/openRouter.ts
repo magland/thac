@@ -1,16 +1,42 @@
 import { ORMessage, ORRequest, ORResponse, ORToolCall } from '@shared/openRouterTypes'
-import { availableTools, toolExecutors } from '../tools'
+import allTools from '../tools/allTools'
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
 const kk = `${"sk-or-v1"}${"-408b489add5a1bde0f251880d69fb326b42c445ad1a347"}${"b689e0b99a8d4a7fc7"}`
 
+const constructToolSystemMessage = () => {
+  let d = `# DANDI Archive Tools
+
+The following specialized tools are available for interacting with the DANDI Archive:
+
+`;
+
+  for (const a of allTools) {
+    d += `## Tool: ${a.toolFunction.name}`;
+    d += a.detailedDescription;
+    d += "\n\n";
+}
+
+    return d;
+}
+
 export const sendChatMessage = async (messages: ORMessage[]): Promise<ORMessage[]> => {
+  // Create system message with tool descriptions
+  const systemMessage: ORMessage = {
+    role: 'system',
+    content: constructToolSystemMessage()
+  }
+
+  // Prepend system message to the messages array
   const request: ORRequest = {
     model: 'gpt-4o-mini',
-    messages,
+    messages: [systemMessage, ...messages],
     stream: false,
-    tools: availableTools
+    tools: allTools.map((tool) => ({
+      type: "function",
+      function: tool.toolFunction
+    }))
   }
 
   const response = await fetch(OPENROUTER_API_URL, {
@@ -86,7 +112,7 @@ const handleToolCall = async (toolCall: ORToolCall): Promise<string> => {
   }
 
   const { name, arguments: argsString } = toolCall.function
-  const executor = toolExecutors[name]
+  const executor = allTools.find((tool) => tool.toolFunction.name === name)?.execute;
 
   if (!executor) {
     throw new Error(`No executor found for tool: ${name}`)
