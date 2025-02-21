@@ -7,7 +7,7 @@ import {
   IconButton,
   Toolbar,
   Tooltip,
-  Typography
+  Typography,
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import {
@@ -15,7 +15,7 @@ import {
   BrowserRouter as Router,
   Routes,
   useNavigate,
-  useSearchParams
+  useSearchParams,
 } from "react-router-dom";
 import HomePage from "./pages/HomePage/HomePage";
 import SettingsPage from "./pages/SettingsPage/SettingsPage";

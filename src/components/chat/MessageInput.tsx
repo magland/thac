@@ -1,44 +1,44 @@
-import { IconButton, Paper, TextField } from '@mui/material'
-import SendIcon from '@mui/icons-material/Send'
-import { FunctionComponent, KeyboardEvent, useState } from 'react'
+import { IconButton, Paper, TextField } from "@mui/material";
+import SendIcon from "@mui/icons-material/Send";
+import { FunctionComponent, KeyboardEvent, useState } from "react";
 
 type MessageInputProps = {
-  onSendMessage: (message: string) => void
-  disabled?: boolean
-}
+  onSendMessage: (message: string) => void;
+  disabled?: boolean;
+};
 
 const MessageInput: FunctionComponent<MessageInputProps> = ({
   onSendMessage,
-  disabled = false
+  disabled = false,
 }) => {
-  const [message, setMessage] = useState('')
+  const [message, setMessage] = useState("");
 
   const handleSend = () => {
     if (message.trim() && !disabled) {
-      onSendMessage(message.trim())
-      setMessage('')
+      onSendMessage(message.trim());
+      setMessage("");
     }
-  }
+  };
 
   const handleKeyPress = (event: KeyboardEvent) => {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault()
-      handleSend()
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      handleSend();
     }
-  }
+  };
 
   return (
     <Paper
       elevation={2}
       sx={{
         p: 2,
-        display: 'flex',
-        alignItems: 'center',
+        display: "flex",
+        alignItems: "center",
         gap: 1,
-        position: 'absolute',
+        position: "absolute",
         bottom: 0,
         left: 0,
-        right: 0
+        right: 0,
       }}
     >
       <TextField
@@ -60,7 +60,7 @@ const MessageInput: FunctionComponent<MessageInputProps> = ({
         <SendIcon />
       </IconButton>
     </Paper>
-  )
-}
+  );
+};
 
-export default MessageInput
+export default MessageInput;
