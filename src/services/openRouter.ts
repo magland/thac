@@ -38,6 +38,7 @@ export const sendChatMessage = async (
       callbackId: string;
       parameters: [{ [key: string]: string }];
     }) => void;
+    onPendingMessages?: (messages: ORMessage[]) => void;
   },
 ): Promise<ORMessage[]> => {
   // Create system message with tool descriptions
@@ -110,6 +111,10 @@ export const sendChatMessage = async (
         tool_calls: toolCalls,
       };
       updatedMessages.push(assistantMessage);
+      const pendingMessages: ORMessage[] = [assistantMessage];
+      if (o.onPendingMessages) {
+        o.onPendingMessages(pendingMessages);
+      }
 
       // Then handle all tool calls
       const toolResults = await Promise.all(
@@ -124,10 +129,21 @@ export const sendChatMessage = async (
           tool_call_id: toolCalls[index].id,
         };
         updatedMessages.push(toolMessage);
+        pendingMessages.push(toolMessage);
       });
+      if (o.onPendingMessages) {
+        o.onPendingMessages(pendingMessages);
+      }
 
       // Make another request with the updated messages
-      return sendChatMessage(updatedMessages, o);
+      return sendChatMessage(updatedMessages, {
+        ...o,
+        onPendingMessages: (mm: ORMessage[]) => {
+          if (o.onPendingMessages) {
+            o.onPendingMessages([...pendingMessages, ...mm]);
+          }
+        },
+      });
     }
 
     // For regular messages, just add the assistant's response

@@ -18,6 +18,7 @@ const ChatInterface: FunctionComponent<ChatInterfaceProps> = ({
   onSendMessageToApp,
 }) => {
   const [messages, setMessages] = useState<ORMessage[]>([]);
+  const [pendingMessages, setPendingMessages] = useState<ORMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSendMessage = async (content: string) => {
@@ -48,7 +49,11 @@ const ChatInterface: FunctionComponent<ChatInterfaceProps> = ({
     try {
       const newMessages = await sendChatMessage([...messages, userMessage], {
         onInteractWithApp,
+        onPendingMessages: (mm: ORMessage[]) => {
+          setPendingMessages(mm);
+        },
       });
+      setPendingMessages([]);
       setMessages(newMessages);
     } catch (error) {
       console.error("Failed to send message:", error);
@@ -60,7 +65,10 @@ const ChatInterface: FunctionComponent<ChatInterfaceProps> = ({
 
   return (
     <Box sx={{ position: "relative", width, height }}>
-      <MessageList messages={messages} height={height} />
+      <MessageList
+        messages={[...messages, ...pendingMessages]}
+        height={height}
+      />
       {isLoading && (
         <Box
           sx={{
