@@ -64,7 +64,7 @@ export const execute = async (
       z-index: 1000;
       font-family: Arial, sans-serif;
     `;
-    confirmationElement.textContent = "Click when interaction is complete";
+    confirmationElement.textContent = `Click when interaction is complete (${params.componentId}/${params.callbackId})`;
 
     // Add click handler
     confirmationElement.onclick = () => {

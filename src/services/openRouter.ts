@@ -176,7 +176,6 @@ const handleToolCall = async (
 
 const getSystemMessageForAIContext = (): ORMessage => {
   const aiContext = getGlobalAIContext();
-  console.log("---- bbb", aiContext);
   if (!aiContext) {
     return {
       role: "system",
