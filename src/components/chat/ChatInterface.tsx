@@ -5,20 +5,17 @@ import { ORMessage } from "../../shared/openRouterTypes";
 import { sendChatMessage } from "../../services/openRouter";
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
-import { AIContext } from "src/pages/HomePage/AIContext";
 
 type ChatInterfaceProps = {
   width: number;
   height: number;
   onSendMessageToApp?: (message: any) => void;
-  aiContext: AIContext | undefined;
 };
 
 const ChatInterface: FunctionComponent<ChatInterfaceProps> = ({
   width,
   height,
   onSendMessageToApp,
-  aiContext,
 }) => {
   const [messages, setMessages] = useState<ORMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -49,17 +46,9 @@ const ChatInterface: FunctionComponent<ChatInterfaceProps> = ({
     };
 
     try {
-      const systemMessageForAIContext = getSystemMessageForAIContext(aiContext);
-      let newMessages = await sendChatMessage(
-        [...messages, systemMessageForAIContext, userMessage],
-        {
-          onInteractWithApp,
-        },
-      );
-      // remove the systemMessageForAIContext from the messages
-      newMessages = newMessages.filter(
-        (message) => message !== systemMessageForAIContext,
-      );
+      const newMessages = await sendChatMessage([...messages, userMessage], {
+        onInteractWithApp,
+      });
       setMessages(newMessages);
     } catch (error) {
       console.error("Failed to send message:", error);
@@ -87,28 +76,6 @@ const ChatInterface: FunctionComponent<ChatInterfaceProps> = ({
       <MessageInput onSendMessage={handleSendMessage} disabled={isLoading} />
     </Box>
   );
-};
-
-const getSystemMessageForAIContext = (
-  aiContext: AIContext | undefined,
-): ORMessage => {
-  if (!aiContext) {
-    return {
-      role: "system",
-      content: "There is no context available.",
-    };
-  }
-
-  const a = `
-You are viewing a web application. The following data represents the context of that application,
-including the callbacks that you are able to call to interact with it.
-
-`;
-
-  return {
-    role: "system",
-    content: a + JSON.stringify(aiContext, null, 2),
-  };
 };
 
 export default ChatInterface;

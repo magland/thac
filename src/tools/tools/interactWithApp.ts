@@ -34,23 +34,60 @@ export const execute = async (
   params: InteractWithAppParams,
   o: any,
 ): Promise<string> => {
-  const realParameters: { [key: string]: any } = {
-    ...(params.parameters || {}),
-  };
-  // sometimes the AI doesn't quite understand, and puts the parameters at the top level
-  for (const key in params) {
-    if (key !== "componentId" && key !== "callbackId" && key !== "parameters") {
-      realParameters[key] = (params as any)[key];
+  return new Promise((resolve) => {
+    const realParameters: { [key: string]: any } = {
+      ...(params.parameters || {}),
+    };
+    // sometimes the AI doesn't quite understand, and puts the parameters at the top level
+    for (const key in params) {
+      if (
+        key !== "componentId" &&
+        key !== "callbackId" &&
+        key !== "parameters"
+      ) {
+        realParameters[key] = (params as any)[key];
+      }
     }
-  }
-  o.onInteractWithApp({
-    componentId: params.componentId,
-    callbackId: params.callbackId,
-    parameters: realParameters,
+
+    // Create confirmation UI element
+    const confirmationElement = document.createElement("div");
+    confirmationElement.style.cssText = `
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background-color: #2196F3;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      cursor: pointer;
+      z-index: 1000;
+      font-family: Arial, sans-serif;
+    `;
+    confirmationElement.textContent = "Click when interaction is complete";
+
+    // Add click handler
+    confirmationElement.onclick = () => {
+      document.body.removeChild(confirmationElement);
+      resolve("Interaction completed by user");
+    };
+
+    // Add to document
+    document.body.appendChild(confirmationElement);
+
+    // Execute the interaction
+    o.onInteractWithApp({
+      componentId: params.componentId,
+      callbackId: params.callbackId,
+      parameters: realParameters,
+    });
   });
-  return "Interacted with app";
 };
 
 export const detailedDescription = `
 This tool allows you to interact with the web application by executing a callback.
+
+It's very important that you only use the callbacks that are provided by the web application. Do not make up your own callbacks.
+
+Please only do one interaction at a time. If the task is going to be multi-step, you should do just the next step and wait until the tool call to come back before proceeding.
 `;

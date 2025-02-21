@@ -1,3 +1,20 @@
+/**
+ * HorizontalSplitter Component
+ *
+ * This component creates a horizontal split view with a draggable divider between two panels.
+ * Special handling is implemented to address an issue with iframe event capture during splitter dragging:
+ *
+ * Problem:
+ * When dragging the splitter and the mouse enters an iframe region, the main window loses mouse events
+ * because they get captured by the iframe. This breaks the drag operation and creates a poor user experience.
+ *
+ * Solution:
+ * - When dragging starts, a full-window overlay div is shown above all content (including iframes)
+ * - This overlay captures all mouse events during the drag operation
+ * - The iframe cannot steal events because the overlay is above it
+ * - Result is smooth, uninterrupted dragging regardless of iframe content
+ */
+
 import React, {
   FunctionComponent,
   useCallback,
@@ -80,6 +97,26 @@ const HorizontalSplitter: FunctionComponent<HorizontalSplitterProps> = ({
         height,
       }}
     >
+      {/*
+        Overlay div that only appears during dragging.
+        - Positioned above all content including iframes
+        - Captures mouse events to prevent iframe event stealing
+        - Transparent but covers entire window
+        - Critical for maintaining smooth drag operations
+      */}
+      {isDragging && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 9999,
+            cursor: "col-resize",
+          }}
+        />
+      )}
       <div
         style={{
           position: "absolute",
