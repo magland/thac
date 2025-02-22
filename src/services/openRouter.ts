@@ -4,6 +4,34 @@ import {
   ORResponse,
   ORToolCall,
 } from "@shared/openRouterTypes";
+
+export const AVAILABLE_MODELS = [
+  {
+    model: "google/gemini-2.0-flash-001",
+    label: "gemini-2.0-flash-001",
+    cost: {
+      prompt: 0.1,
+      completion: 0.4,
+    },
+  },
+  {
+    model: "anthropic/claude-3.5-sonnet",
+    label: "claude-3.5-sonnet",
+    cost: {
+      prompt: 3,
+      completion: 15,
+    },
+  },
+  {
+    model: "openai/gpt-4o-mini",
+    label: "gpt-4o-mini",
+    cost: {
+      prompt: 0.15,
+      completion: 0.6,
+    },
+  },
+];
+
 import allTools from "../tools/allTools";
 import { getGlobalAIContext } from "../pages/HomePage/HomePage";
 
@@ -30,8 +58,18 @@ The following specialized tools are available.
   return d;
 };
 
+export type ChatMessageResponse = {
+  messages: ORMessage[];
+  usage?: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    cost: number;
+  };
+};
+
 export const sendChatMessage = async (
   messages: ORMessage[],
+  model: string,
   o: {
     onInteractWithApp: (a: {
       componentId: string;
@@ -40,7 +78,7 @@ export const sendChatMessage = async (
     }) => void;
     onPendingMessages?: (messages: ORMessage[]) => void;
   },
-): Promise<ORMessage[]> => {
+): Promise<ChatMessageResponse> => {
   // Create system message with tool descriptions
   const initialSystemMessage: ORMessage = {
     role: "system",
@@ -64,9 +102,7 @@ export const sendChatMessage = async (
   }
 
   const request: ORRequest = {
-    // model: "anthropic/claude-3.5-sonnet",
-    // model: "openai/gpt-4o-mini",
-    model: "google/gemini-2.0-flash-001",
+    model: model,
     messages: [initialSystemMessage, ...messages1],
     stream: false,
     tools: allTools.map((tool) => ({
@@ -92,8 +128,16 @@ export const sendChatMessage = async (
   const choice = result.choices[0];
 
   if (!choice) {
-    return messages;
+    return { messages };
   }
+
+  const prompt_tokens = result.usage?.prompt_tokens || 0;
+  const completion_tokens = result.usage?.completion_tokens || 0;
+
+  const a = AVAILABLE_MODELS.find((m) => m.model === model);
+  const cost =
+    ((a?.cost.prompt || 0) * prompt_tokens) / 1_000_000 +
+    ((a?.cost.completion || 0) * completion_tokens) / 1_000_000;
 
   // note that we don't include the system message for AI context in this one
   const updatedMessages = [...messages];
@@ -136,7 +180,7 @@ export const sendChatMessage = async (
       }
 
       // Make another request with the updated messages
-      return sendChatMessage(updatedMessages, {
+      const rr = await sendChatMessage(updatedMessages, model, {
         ...o,
         onPendingMessages: (mm: ORMessage[]) => {
           if (o.onPendingMessages) {
@@ -144,6 +188,16 @@ export const sendChatMessage = async (
           }
         },
       });
+      return {
+        messages: rr.messages,
+        usage: rr.usage
+          ? {
+              prompt_tokens: prompt_tokens + rr.usage.prompt_tokens,
+              completion_tokens: completion_tokens + rr.usage.completion_tokens,
+              cost: cost + rr.usage.cost,
+            }
+          : undefined,
+      };
     }
 
     // For regular messages, just add the assistant's response
@@ -155,7 +209,14 @@ export const sendChatMessage = async (
     updatedMessages.push(assistantMessage);
   }
 
-  return updatedMessages;
+  return {
+    messages: updatedMessages,
+    usage: {
+      prompt_tokens,
+      completion_tokens,
+      cost,
+    },
+  };
 };
 
 const handleToolCall = async (

@@ -35,10 +35,6 @@ const MessageInput: FunctionComponent<MessageInputProps> = ({
         display: "flex",
         alignItems: "center",
         gap: 1,
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        right: 0,
       }}
     >
       <TextField
