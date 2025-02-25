@@ -4,11 +4,16 @@ import { useSearchParams } from "react-router-dom";
 import ChatInterface from "../../components/chat/ChatInterface";
 import HorizontalSplitter from "../../components/HorizontalSplitter";
 import IframeApp, { IframeAppHandle } from "../../components/IframeApp";
-import { AIContext } from "./AIContext";
+import { AIRegisteredComponent } from "./types";
 
 type HomePageProps = {
   width: number;
   height: number;
+};
+
+export type AIContext = {
+  title: string;
+  components: AIRegisteredComponent[];
 };
 
 const globalData: {
@@ -30,8 +35,11 @@ const HomePage: FunctionComponent<HomePageProps> = ({ width, height }) => {
   const handleIframeMessage = useCallback((message: any) => {
     if (message.type === "aiContextUpdate") {
       globalData.aiContext = {
+        title: message.title || "Untitled",
         components: message.components,
       };
+      window.document.title = globalData.aiContext.title;
+      console.info({ aiContext: globalData.aiContext });
     }
   }, []);
 

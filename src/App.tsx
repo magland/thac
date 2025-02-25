@@ -1,4 +1,3 @@
-import StatusBar from "@components/StatusBar";
 import "@css/App.css";
 import { useWindowDimensions } from "@fi-sci/misc";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -52,8 +51,7 @@ const AppContent = () => {
   const { width, height } = useWindowDimensions();
   const hideAppBar = searchParams.get("embedded") === "1";
   const appBarHeight = hideAppBar ? 0 : 50; // hard-coded to match the height of the AppBar
-  const statusBarHeight = 20;
-  const mainHeight = height - appBarHeight - statusBarHeight;
+  const mainHeight = height - appBarHeight;
   return (
     <div
       className="AppContentDiv"
@@ -130,19 +128,6 @@ const AppContent = () => {
             element={<SettingsPage width={width} height={mainHeight} />}
           />
         </Routes>
-      </div>
-
-      <div
-        className="StatusBarDiv"
-        style={{
-          position: "absolute",
-          width,
-          height: statusBarHeight,
-          overflow: "hidden",
-          top: appBarHeight + mainHeight,
-        }}
-      >
-        <StatusBar />
       </div>
     </div>
   );
