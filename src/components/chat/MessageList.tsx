@@ -32,14 +32,22 @@ const MessageList: FunctionComponent<MessageListProps> = ({
         py: 2,
       }}
     >
-      {messages.map((msg, index) => (
-        <Message
-          key={index}
-          message={msg}
-          messages={messages}
-          isUser={msg.role === "user"}
-        />
-      ))}
+      {messages
+        .filter((m) => {
+          // this is a hack to hide system messages that are just describing what the user is seeing
+          if (m.role === "system" && (m.content as string).startsWith(":")) {
+            return false;
+          }
+          return true;
+        })
+        .map((msg, index) => (
+          <Message
+            key={index}
+            message={msg}
+            messages={messages}
+            isUser={msg.role === "user"}
+          />
+        ))}
       <div ref={messagesEndRef} />
     </Box>
   );

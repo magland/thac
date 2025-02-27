@@ -29,7 +29,9 @@ const ChatInterface: FunctionComponent<ChatInterfaceProps> = ({
     "google/gemini-2.0-flash-001",
   );
   const [messages, setMessages] = useState<ORMessage[]>([]);
-  const [pendingMessages, setPendingMessages] = useState<ORMessage[]>([]);
+  const [pendingMessages, setPendingMessages] = useState<
+    ORMessage[] | undefined
+  >(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [tokensUp, setTokensUp] = useState(0);
   const [tokensDown, setTokensDown] = useState(0);
@@ -71,7 +73,7 @@ const ChatInterface: FunctionComponent<ChatInterfaceProps> = ({
           },
         },
       );
-      setPendingMessages([]);
+      setPendingMessages(undefined);
 
       if (response.usage) {
         setTokensUp((prev) => prev + response.usage!.prompt_tokens);
@@ -99,7 +101,7 @@ const ChatInterface: FunctionComponent<ChatInterfaceProps> = ({
       }}
     >
       <MessageList
-        messages={[...messages, ...pendingMessages]}
+        messages={pendingMessages ? pendingMessages : messages}
         height={height - 65} // Reduced to accommodate input and compact status bar
       />
       <Stack spacing={1} sx={{ p: 1 }}>

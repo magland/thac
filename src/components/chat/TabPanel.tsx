@@ -22,7 +22,7 @@ function TabPanelWrapper(props: TabPanelWrapperProps) {
       aria-labelledby={`tab-${index}`}
       sx={{ flex: 1, overflow: "hidden" }}
     >
-      {value === index && children}
+      {children}
     </Box>
   );
 }

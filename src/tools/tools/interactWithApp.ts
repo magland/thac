@@ -49,6 +49,7 @@ export const execute = async (
       }
     }
 
+    /*
     // Create confirmation UI element
     const confirmationElement = document.createElement("div");
     confirmationElement.style.cssText = `
@@ -74,6 +75,7 @@ export const execute = async (
 
     // Add to document
     document.body.appendChild(confirmationElement);
+    */
 
     // Execute the interaction
     o.onInteractWithApp({
@@ -81,6 +83,7 @@ export const execute = async (
       callbackId: params.callbackId,
       parameters: realParameters,
     });
+    resolve("Interaction completed");
   });
 };
 
@@ -89,5 +92,4 @@ This tool allows you to interact with the web application by executing a callbac
 
 It's very important that you only use the callbacks that are provided by the web application. Do not make up your own callbacks.
 
-Please only do one interaction at a time. If the task is going to be multi-step, you should do just the next step and wait until the tool call to come back before proceeding.
 `;
