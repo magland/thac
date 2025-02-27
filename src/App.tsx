@@ -70,8 +70,8 @@ const AppContent = () => {
           <AppBar position="static">
             <Toolbar>
               <img
-                src="/thac-logo.svg"
-                alt="Thac Logo"
+                src="/neurosift-chat-logo.svg"
+                alt="Neurosift Chat Logo"
                 style={{
                   height: "32px",
                   marginRight: "10px",
@@ -92,7 +92,7 @@ const AppContent = () => {
                 }}
                 onClick={() => navigate("/")}
               >
-                Thac
+                Neurosift Chat
               </Typography>
               <Tooltip title="Settings">
                 <IconButton

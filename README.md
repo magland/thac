@@ -1,4 +1,4 @@
-# thac
+# neurosift-chat
 
 ## License
 

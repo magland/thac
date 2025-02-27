@@ -10,7 +10,7 @@ interface ToolExecutionContext {
   }) => void;
 }
 
-interface ThacTool {
+interface NCTool {
   toolFunction: ORFunctionDescription;
   execute: (
     params: Record<string, unknown>,
@@ -20,9 +20,9 @@ interface ThacTool {
 }
 
 const staticTools = [interactWithApp];
-let cachedDynamicTools: ThacTool[] = [];
+let cachedDynamicTools: NCTool[] = [];
 
-const convertApiToolToLocalFormat = (apiTool: Tool): ThacTool => ({
+const convertApiToolToLocalFormat = (apiTool: Tool): NCTool => ({
   toolFunction: {
     name: apiTool.name,
     description: apiTool.description,
