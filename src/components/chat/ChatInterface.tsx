@@ -18,12 +18,14 @@ type ChatInterfaceProps = {
   width: number;
   height: number;
   onSendMessageToApp?: (message: any) => void;
+  onNeurosiftUrlUpdate?: (url: string) => void;
 };
 
 const ChatInterface: FunctionComponent<ChatInterfaceProps> = ({
   width,
   height,
   onSendMessageToApp,
+  onNeurosiftUrlUpdate,
 }) => {
   const [selectedModel, setSelectedModel] = useState(
     "google/gemini-2.0-flash-001",
@@ -103,6 +105,7 @@ const ChatInterface: FunctionComponent<ChatInterfaceProps> = ({
       <MessageList
         messages={pendingMessages ? pendingMessages : messages}
         height={height - 65} // Reduced to accommodate input and compact status bar
+        onNeurosiftUrlUpdate={onNeurosiftUrlUpdate}
       />
       <Stack spacing={1} sx={{ p: 1 }}>
         <MessageInput onSendMessage={handleSendMessage} disabled={isLoading} />

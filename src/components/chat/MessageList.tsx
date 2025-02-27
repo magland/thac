@@ -6,11 +6,13 @@ import Message from "./Message";
 type MessageListProps = {
   messages: ORMessage[];
   height: number;
+  onNeurosiftUrlUpdate?: (url: string) => void;
 };
 
 const MessageList: FunctionComponent<MessageListProps> = ({
   messages,
   height,
+  onNeurosiftUrlUpdate,
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -46,6 +48,7 @@ const MessageList: FunctionComponent<MessageListProps> = ({
             message={msg}
             messages={messages}
             isUser={msg.role === "user"}
+            onNeurosiftUrlUpdate={onNeurosiftUrlUpdate}
           />
         ))}
       <div ref={messagesEndRef} />

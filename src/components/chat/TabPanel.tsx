@@ -32,6 +32,7 @@ type TabPanelProps = {
   height: number;
   context: AIContext | undefined;
   onSendMessageToApp?: (message: AICallbackMessage) => void;
+  onNeurosiftUrlUpdate?: (url: string) => void;
 };
 
 const TabPanel: FunctionComponent<TabPanelProps> = ({
@@ -39,6 +40,7 @@ const TabPanel: FunctionComponent<TabPanelProps> = ({
   height,
   context,
   onSendMessageToApp,
+  onNeurosiftUrlUpdate,
 }) => {
   const [activeTab, setActiveTab] = useState(0);
 
@@ -64,6 +66,7 @@ const TabPanel: FunctionComponent<TabPanelProps> = ({
           width={width}
           height={contentHeight}
           onSendMessageToApp={onSendMessageToApp}
+          onNeurosiftUrlUpdate={onNeurosiftUrlUpdate}
         />
       </TabPanelWrapper>
       <TabPanelWrapper value={activeTab} index={1}>

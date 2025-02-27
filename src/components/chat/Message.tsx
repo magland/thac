@@ -69,12 +69,14 @@ type MessageProps = {
   message: ORMessage;
   messages: ORMessage[];
   isUser: boolean;
+  onNeurosiftUrlUpdate?: (url: string) => void;
 };
 
 const Message: FunctionComponent<MessageProps> = ({
   message,
   messages,
   isUser,
+  onNeurosiftUrlUpdate,
 }) => {
   const findToolName = (toolCallId: string): string => {
     for (const msg of messages) {
@@ -171,7 +173,18 @@ const Message: FunctionComponent<MessageProps> = ({
                 components={{
                   a({ children, ...props }) {
                     return (
-                      <a target="_blank" rel="noopener noreferrer" {...props}>
+                      <a
+                        onClick={(e) => {
+                          const href = props.href;
+                          if (href?.startsWith('https://neurosift.app') && onNeurosiftUrlUpdate) {
+                            e.preventDefault();
+                            onNeurosiftUrlUpdate(href);
+                          }
+                        }}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        {...props}
+                      >
                         {children}
                       </a>
                     );
@@ -214,7 +227,18 @@ const Message: FunctionComponent<MessageProps> = ({
           components={{
             a({ children, ...props }) {
               return (
-                <a target="_blank" rel="noopener noreferrer" {...props}>
+                <a
+                  onClick={(e) => {
+                    const href = props.href;
+                    if (href?.startsWith('https://neurosift.app') && onNeurosiftUrlUpdate) {
+                      e.preventDefault();
+                      onNeurosiftUrlUpdate(href);
+                    }
+                  }}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  {...props}
+                >
                   {children}
                 </a>
               );
@@ -257,7 +281,18 @@ const Message: FunctionComponent<MessageProps> = ({
               components={{
                 a({ children, ...props }) {
                   return (
-                    <a target="_blank" rel="noopener noreferrer" {...props}>
+                    <a
+                      onClick={(e) => {
+                        const href = props.href;
+                        if (href?.startsWith('https://neurosift.app') && onNeurosiftUrlUpdate) {
+                          e.preventDefault();
+                          onNeurosiftUrlUpdate(href);
+                        }
+                      }}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      {...props}
+                    >
                       {children}
                     </a>
                   );
