@@ -31,7 +31,7 @@ const convertApiToolToLocalFormat = (apiTool: Tool): ThacTool => ({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   execute: async (
     params: Record<string, unknown>,
-    context: ToolExecutionContext,
+    // context: ToolExecutionContext,
   ) => {
     const result = await executeToolCall(apiTool.name, params);
     return JSON.stringify(result);
