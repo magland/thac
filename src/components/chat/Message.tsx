@@ -128,13 +128,33 @@ const Message: FunctionComponent<MessageProps> = ({
           {toolCallsExpanded &&
             message.tool_calls.map((toolCall) => (
               <Box key={toolCall.id} sx={{ mb: 1 }}>
-                <Typography
-                  variant="body2"
-                  component="div"
-                  sx={{ fontFamily: "monospace" }}
-                >
-                  {`${toolCall.function.name}(${toolCall.function.arguments})`}
-                </Typography>
+                {toolCall.function.name === "execute_python_code" ? (
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      code({ children }) {
+                        return (
+                          <SyntaxHighlighter
+                            PreTag="div"
+                            children={String(children).replace(/\n$/, "")}
+                            language="python"
+                            style={highlightStyle}
+                          />
+                        );
+                      },
+                    }}
+                  >
+                    {`\`\`\`python\n${JSON.parse(toolCall.function.arguments).code}\n\`\`\``}
+                  </ReactMarkdown>
+                ) : (
+                  <Typography
+                    variant="body2"
+                    component="div"
+                    sx={{ fontFamily: "monospace" }}
+                  >
+                    `${toolCall.function.name}(${toolCall.function.arguments})`
+                  </Typography>
+                )}
               </Box>
             ))}
         </Box>
@@ -176,7 +196,10 @@ const Message: FunctionComponent<MessageProps> = ({
                       <a
                         onClick={(e) => {
                           const href = props.href;
-                          if (href?.startsWith('https://neurosift.app') && onNeurosiftUrlUpdate) {
+                          if (
+                            href?.startsWith("https://neurosift.app") &&
+                            onNeurosiftUrlUpdate
+                          ) {
                             e.preventDefault();
                             onNeurosiftUrlUpdate(href);
                           }
@@ -230,7 +253,10 @@ const Message: FunctionComponent<MessageProps> = ({
                 <a
                   onClick={(e) => {
                     const href = props.href;
-                    if (href?.startsWith('https://neurosift.app') && onNeurosiftUrlUpdate) {
+                    if (
+                      href?.startsWith("https://neurosift.app") &&
+                      onNeurosiftUrlUpdate
+                    ) {
                       e.preventDefault();
                       onNeurosiftUrlUpdate(href);
                     }
@@ -284,7 +310,10 @@ const Message: FunctionComponent<MessageProps> = ({
                     <a
                       onClick={(e) => {
                         const href = props.href;
-                        if (href?.startsWith('https://neurosift.app') && onNeurosiftUrlUpdate) {
+                        if (
+                          href?.startsWith("https://neurosift.app") &&
+                          onNeurosiftUrlUpdate
+                        ) {
                           e.preventDefault();
                           onNeurosiftUrlUpdate(href);
                         }
@@ -329,7 +358,7 @@ const Message: FunctionComponent<MessageProps> = ({
               <img
                 src={part.image_url.url}
                 alt="Content"
-                style={{ maxWidth: "100%", borderRadius: 4 }}
+                style={{ borderRadius: 4 }}
               />
             </Box>
           );

@@ -18,6 +18,7 @@ import {
 } from "react-router-dom";
 import HomePage from "./pages/HomePage/HomePage";
 import SettingsPage from "./pages/SettingsPage/SettingsPage";
+import { JupyterConnectivityProvider } from "./jupyter/JupyterConnectivity";
 
 const theme = createTheme({
   palette: {
@@ -137,7 +138,9 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <Router>
-        <AppContent />
+        <JupyterConnectivityProvider mode="jupyter-server">
+          <AppContent />
+        </JupyterConnectivityProvider>
       </Router>
     </ThemeProvider>
   );

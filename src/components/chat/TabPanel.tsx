@@ -4,6 +4,8 @@ import ChatInterface from "./ChatInterface";
 import ContextView from "./ContextView";
 import { AIContext } from "../../pages/HomePage/HomePage";
 import { AICallbackMessage } from "../../pages/HomePage/types";
+import { useJupyterConnectivity } from "../../jupyter/JupyterConnectivity";
+import JupyterView from "../../jupyter/JupyterView";
 
 interface TabPanelWrapperProps {
   children?: React.ReactNode;
@@ -51,6 +53,8 @@ const TabPanel: FunctionComponent<TabPanelProps> = ({
   // Subtract tab height from content height
   const contentHeight = height - 48; // 48px is the height of the tab bar
 
+  const jupyterConnectivityState = useJupyterConnectivity();
+
   return (
     <Box sx={{ display: "flex", flexDirection: "column", width, height }}>
       <Tabs
@@ -60,6 +64,26 @@ const TabPanel: FunctionComponent<TabPanelProps> = ({
       >
         <Tab label="Chat" id="tab-0" aria-controls="tabpanel-0" />
         <Tab label="Context" id="tab-1" aria-controls="tabpanel-1" />
+        <Tab
+          label={
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              Jupyter
+              <Box
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  backgroundColor:
+                    jupyterConnectivityState.jupyterServerIsAvailable
+                      ? "#4caf50"
+                      : "#ddd",
+                }}
+              />
+            </Box>
+          }
+          id="tab-2"
+          aria-controls="tabpanel-2"
+        />
       </Tabs>
       <TabPanelWrapper value={activeTab} index={0}>
         <ChatInterface
@@ -71,6 +95,9 @@ const TabPanel: FunctionComponent<TabPanelProps> = ({
       </TabPanelWrapper>
       <TabPanelWrapper value={activeTab} index={1}>
         <ContextView context={context} height={contentHeight} />
+      </TabPanelWrapper>
+      <TabPanelWrapper value={activeTab} index={2}>
+        <JupyterView width={width} height={contentHeight} />
       </TabPanelWrapper>
     </Box>
   );

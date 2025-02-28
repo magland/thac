@@ -1,16 +1,22 @@
 import { Box } from "@mui/material";
 import { FunctionComponent, useEffect, useRef } from "react";
-import { ORMessage } from "../../shared/openRouterTypes";
+import { ORMessage, ORToolCall } from "../../shared/openRouterTypes";
 import Message from "./Message";
+import ToolApprovalMessage from "./ToolApprovalMessage";
+import { globalOutputItems } from "../../tools/tools/executePythonCode";
 
 type MessageListProps = {
   messages: ORMessage[];
+  toolCallForPermission?: ORToolCall;
+  onSetToolCallApproval?: (toolCall: ORToolCall, approved: boolean) => void;
   height: number;
   onNeurosiftUrlUpdate?: (url: string) => void;
 };
 
 const MessageList: FunctionComponent<MessageListProps> = ({
   messages,
+  toolCallForPermission,
+  onSetToolCallApproval,
   height,
   onNeurosiftUrlUpdate,
 }) => {
@@ -22,7 +28,7 @@ const MessageList: FunctionComponent<MessageListProps> = ({
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, toolCallForPermission]);
 
   return (
     <Box
@@ -43,17 +49,53 @@ const MessageList: FunctionComponent<MessageListProps> = ({
           return true;
         })
         .map((msg, index) => (
-          <Message
-            key={index}
-            message={msg}
-            messages={messages}
-            isUser={msg.role === "user"}
-            onNeurosiftUrlUpdate={onNeurosiftUrlUpdate}
-          />
+          <>
+            <Message
+              key={index}
+              message={msg}
+              messages={messages}
+              isUser={msg.role === "user"}
+              onNeurosiftUrlUpdate={onNeurosiftUrlUpdate}
+            />
+            {msg.role === "tool" && (
+              <OutputImagesFromToolOutputContent content={msg.content} />
+            )}
+          </>
         ))}
+      {toolCallForPermission && onSetToolCallApproval && (
+        <ToolApprovalMessage
+          toolCallForPermission={toolCallForPermission}
+          onSetToolCallApproval={onSetToolCallApproval}
+        />
+      )}
       <div ref={messagesEndRef} />
     </Box>
   );
+};
+
+const OutputImagesFromToolOutputContent: FunctionComponent<{
+  content: string;
+}> = ({ content }) => {
+  const elements: JSX.Element[] = [];
+  // find things of the form <img src="key.png" />
+  const regex = /<img src="([^"]+)" \/>/g;
+  const matches = content.matchAll(regex);
+  for (const match of matches) {
+    elements.push(<img key={match[1]} src={keyToPngUrl(match[1])} />);
+  }
+  if (elements.length === 0) {
+    return null;
+  }
+  // important to wrap in a div so that the dimensions of the <img> elements are equal to the dimensions of the images
+  return <div>{elements}</div>;
+};
+
+const keyToPngUrl = (key: string) => {
+  const a = globalOutputItems[key];
+  if (!a) {
+    return "";
+  }
+  return `data:image/png;base64,${a.content}`;
 };
 
 export default MessageList;

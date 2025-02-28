@@ -93,3 +93,5 @@ This tool allows you to interact with the web application by executing a callbac
 It's very important that you only use the callbacks that are provided by the web application. Do not make up your own callbacks.
 
 `;
+
+export const requiresPermission = false;

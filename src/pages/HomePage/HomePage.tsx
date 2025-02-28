@@ -93,14 +93,14 @@ const HomePage: FunctionComponent<HomePageProps> = ({ width, height }) => {
           key="chat"
           width={0} // HorizontalSplitter will set the actual width
           height={height}
-      context={getGlobalAIContext()}
-      onSendMessageToApp={handleSendMessageToApp}
-      onNeurosiftUrlUpdate={(url: string) => {
-        const appUrl = url.replace(/&/g, "%26");
-        navigate(`?app=${appUrl}`, { replace: true });
-        // force an update to the iframe
-        setInitialAppUrl(url);
-      }}
+          context={getGlobalAIContext()}
+          onSendMessageToApp={handleSendMessageToApp}
+          onNeurosiftUrlUpdate={(url: string) => {
+            const appUrl = url.replace(/&/g, "%26");
+            navigate(`?app=${appUrl}`, { replace: true });
+            // force an update to the iframe
+            setInitialAppUrl(url);
+          }}
         />,
         <IframeApp
           key="app"

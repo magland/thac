@@ -34,6 +34,7 @@ export const AVAILABLE_MODELS = [
 
 import { getAllTools } from "../tools/allTools";
 import { getGlobalAIContext } from "../pages/HomePage/HomePage";
+import { JupyterConnectivityState } from "src/jupyter/JupyterConnectivity";
 
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
 const kk = `${"sk-or-v1"}${"-408b489add5a1bde0f251880d69fb326b42c445ad1a347"}${"b689e0b99a8d4a7fc7"}`;
@@ -77,6 +78,8 @@ export const sendChatMessage = async (
       parameters: [{ [key: string]: string }];
     }) => void;
     onPendingMessages?: (messages: ORMessage[]) => void;
+    jupyterConnectivity: JupyterConnectivityState;
+    askPermissionToRunTool: (toolCall: ORToolCall) => Promise<boolean>;
   },
 ): Promise<ChatMessageResponse> => {
   // Create system message with tool descriptions
@@ -179,22 +182,31 @@ export const sendChatMessage = async (
         o.onPendingMessages(updatedMessages);
       }
 
-      // Then handle all tool calls
-      const toolResults = await Promise.all(
-        toolCalls.map((toolCall: ORToolCall) => handleToolCall(toolCall, o)),
-      );
-
-      // Add tool results as messages
-      toolResults.forEach((toolResult: string, index: number) => {
-        const toolMessage: ORMessage = {
-          role: "tool",
-          content: toolResult,
-          tool_call_id: toolCalls[index].id,
-        };
-        updatedMessages.push(toolMessage);
-      });
-      if (o.onPendingMessages) {
-        o.onPendingMessages(updatedMessages);
+      for (const tc of toolCalls) {
+        const okayToRun = await o.askPermissionToRunTool(tc);
+        if (okayToRun) {
+          const toolResult = await handleToolCall(tc, o);
+          const toolMessage: ORMessage = {
+            role: "tool",
+            content: toolResult,
+            tool_call_id: tc.id,
+          };
+          updatedMessages.push(toolMessage);
+          if (o.onPendingMessages) {
+            o.onPendingMessages(updatedMessages);
+          }
+        } else {
+          const toolMessage: ORMessage = {
+            role: "tool",
+            content: "Tool execution was not approved by the user.",
+            tool_call_id: tc.id,
+          };
+          updatedMessages.push(toolMessage);
+          if (o.onPendingMessages) {
+            o.onPendingMessages(updatedMessages);
+          }
+          break;
+        }
       }
 
       let shouldMakeAnotherRequest = false;
@@ -267,6 +279,7 @@ const handleToolCall = async (
       callbackId: string;
       parameters: [{ [key: string]: string }];
     }) => void;
+    jupyterConnectivity: JupyterConnectivityState;
   },
 ): Promise<string> => {
   if (toolCall.type !== "function") {

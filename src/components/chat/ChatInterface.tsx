@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { FunctionComponent, useState } from "react";
+import { FunctionComponent, useRef, useState } from "react";
 import {
   Box,
   CircularProgress,
@@ -9,10 +9,12 @@ import {
   InputLabel,
   Stack,
 } from "@mui/material";
-import { ORMessage } from "../../shared/openRouterTypes";
+import { ORMessage, ORToolCall } from "../../shared/openRouterTypes";
 import { sendChatMessage, AVAILABLE_MODELS } from "../../services/openRouter";
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
+import { useJupyterConnectivity } from "../../jupyter/JupyterConnectivity";
+import { getAllTools } from "../../tools/allTools";
 
 type ChatInterfaceProps = {
   width: number;
@@ -38,6 +40,13 @@ const ChatInterface: FunctionComponent<ChatInterfaceProps> = ({
   const [tokensUp, setTokensUp] = useState(0);
   const [tokensDown, setTokensDown] = useState(0);
   const [cost, setCost] = useState(0);
+  const jupyterConnectivity = useJupyterConnectivity();
+  const [toolCallForPermission, setToolCallForPermission] = useState<
+    ORToolCall | undefined
+  >(undefined);
+  const approvedToolCalls = useRef<
+    { toolCall: ORToolCall; approved: boolean }[]
+  >([]);
 
   const handleSendMessage = async (content: string) => {
     const userMessage: ORMessage = {
@@ -73,6 +82,37 @@ const ChatInterface: FunctionComponent<ChatInterfaceProps> = ({
           onPendingMessages: (mm: ORMessage[]) => {
             setPendingMessages(mm);
           },
+          jupyterConnectivity,
+          askPermissionToRunTool: async (toolCall: ORToolCall) => {
+            const allTools = await getAllTools();
+            const tool = allTools.find(
+              (t) => t.toolFunction.name === toolCall.function.name,
+            );
+            if (!tool) {
+              throw new Error(`Tool not found: ${toolCall.function.name}`);
+            }
+            if (!tool.requiresPermission) {
+              return true;
+            }
+
+            // important: while this is set here, it is not going to take effect in this scope
+            setToolCallForPermission(toolCall);
+            while (true) {
+              for (const {
+                toolCall: toolCall2,
+                approved,
+              } of approvedToolCalls.current) {
+                if (toolCall2 === toolCall) {
+                  setToolCallForPermission(undefined);
+                  approvedToolCalls.current = approvedToolCalls.current.filter(
+                    (x) => x.toolCall !== toolCallForPermission,
+                  );
+                  return approved;
+                }
+              }
+              await new Promise((resolve) => setTimeout(resolve, 100));
+            }
+          },
         },
       );
       setPendingMessages(undefined);
@@ -104,6 +144,11 @@ const ChatInterface: FunctionComponent<ChatInterfaceProps> = ({
     >
       <MessageList
         messages={pendingMessages ? pendingMessages : messages}
+        toolCallForPermission={toolCallForPermission}
+        onSetToolCallApproval={(toolCall, approved) => {
+          console.log("---- pushing to approvedToolCalls", toolCall, approved);
+          approvedToolCalls.current.push({ toolCall, approved });
+        }}
         height={height - 65} // Reduced to accommodate input and compact status bar
         onNeurosiftUrlUpdate={onNeurosiftUrlUpdate}
       />

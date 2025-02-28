@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as interactWithApp from "./tools/interactWithApp";
+import * as executePythonCode from "./tools/executePythonCode";
 import { fetchTools, executeToolCall, type Tool } from "../services/toolsApi";
 import { ORFunctionDescription } from "@shared/openRouterTypes";
 
@@ -12,14 +14,12 @@ interface ToolExecutionContext {
 
 interface NCTool {
   toolFunction: ORFunctionDescription;
-  execute: (
-    params: Record<string, unknown>,
-    o: ToolExecutionContext,
-  ) => Promise<string>;
+  execute: (params: any, o: ToolExecutionContext) => Promise<string>;
   detailedDescription: string;
+  requiresPermission: boolean;
 }
 
-const staticTools = [interactWithApp];
+const staticTools: NCTool[] = [interactWithApp, executePythonCode];
 let cachedDynamicTools: NCTool[] = [];
 
 const convertApiToolToLocalFormat = (apiTool: Tool): NCTool => ({
@@ -28,7 +28,6 @@ const convertApiToolToLocalFormat = (apiTool: Tool): NCTool => ({
     description: apiTool.description,
     parameters: apiTool.parameters,
   },
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   execute: async (
     params: Record<string, unknown>,
     // context: ToolExecutionContext,
@@ -43,6 +42,7 @@ ${apiTool.description}
 
 Note: This tool is fetched from an external API service.
 `,
+  requiresPermission: false,
 });
 
 export const getAllTools = async () => {
