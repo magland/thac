@@ -2,6 +2,7 @@
 import { FunctionComponent, useRef, useState } from "react";
 import {
   Box,
+  IconButton,
   CircularProgress,
   FormControl,
   Select,
@@ -9,6 +10,7 @@ import {
   InputLabel,
   Stack,
 } from "@mui/material";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { ORMessage, ORToolCall } from "../../shared/openRouterTypes";
 import { sendChatMessage, AVAILABLE_MODELS } from "../../services/openRouter";
 import MessageList from "./MessageList";
@@ -132,6 +134,21 @@ const ChatInterface: FunctionComponent<ChatInterfaceProps> = ({
     }
   };
 
+  const handleDeleteChat = () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete the entire chat?",
+    );
+    if (!confirmed) return;
+
+    setMessages([]);
+    setPendingMessages(undefined);
+    setToolCallForPermission(undefined);
+    approvedToolCalls.current = [];
+    setTokensUp(0);
+    setTokensDown(0);
+    setCost(0);
+  };
+
   return (
     <Box
       sx={{
@@ -146,11 +163,26 @@ const ChatInterface: FunctionComponent<ChatInterfaceProps> = ({
         messages={pendingMessages ? pendingMessages : messages}
         toolCallForPermission={toolCallForPermission}
         onSetToolCallApproval={(toolCall, approved) => {
-          console.log("---- pushing to approvedToolCalls", toolCall, approved);
           approvedToolCalls.current.push({ toolCall, approved });
         }}
         height={height - 65} // Reduced to accommodate input and compact status bar
         onNeurosiftUrlUpdate={onNeurosiftUrlUpdate}
+        onDeleteMessage={
+          !isLoading
+            ? (index) => {
+                const confirmed = window.confirm(
+                  "Are you sure you want to delete this message and all subsequent messages?",
+                );
+                if (!confirmed) {
+                  return;
+                }
+                setMessages(messages.slice(0, index));
+                setPendingMessages(undefined);
+                setToolCallForPermission(undefined);
+                approvedToolCalls.current = [];
+              }
+            : undefined
+        }
       />
       <Stack spacing={1} sx={{ p: 1 }}>
         <MessageInput onSendMessage={handleSendMessage} disabled={isLoading} />
@@ -164,6 +196,9 @@ const ChatInterface: FunctionComponent<ChatInterfaceProps> = ({
         tokensUp={tokensUp}
         tokensDown={tokensDown}
         totalCost={cost}
+        isLoading={isLoading}
+        numMessages={messages.length}
+        onDeleteChat={handleDeleteChat}
       />
     </Box>
   );
@@ -175,12 +210,18 @@ const StatusBar: FunctionComponent<{
   tokensUp?: number;
   tokensDown?: number;
   totalCost?: number;
+  isLoading?: boolean;
+  numMessages?: number;
+  onDeleteChat?: () => void;
 }> = ({
   selectedModel,
   onModelChange,
   tokensUp = 0,
   tokensDown = 0,
   totalCost = 0,
+  isLoading = false,
+  numMessages = 0,
+  onDeleteChat,
 }) => {
   return (
     <Box
@@ -193,33 +234,49 @@ const StatusBar: FunctionComponent<{
         gap: 2,
       }}
     >
-      <FormControl
-        size="small"
-        sx={{
-          minWidth: 150,
-          "& .MuiInputLabel-root": { fontSize: "0.8rem" },
-          "& .MuiSelect-select": { fontSize: "0.8rem", py: 0.5 },
-        }}
-      >
-        <InputLabel
-          id="model-select-label"
-          sx={{ backgroundColor: "background.paper", px: 0.25 }}
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <FormControl
+          size="small"
+          sx={{
+            minWidth: 150,
+            "& .MuiInputLabel-root": { fontSize: "0.8rem" },
+            "& .MuiSelect-select": { fontSize: "0.8rem", py: 0.5 },
+          }}
         >
-          Model
-        </InputLabel>
-        <Select
-          labelId="model-select-label"
-          value={selectedModel}
-          label="Model"
-          onChange={(e) => onModelChange(e.target.value as string)}
+          <InputLabel
+            id="model-select-label"
+            sx={{ backgroundColor: "background.paper", px: 0.25 }}
+          >
+            Model
+          </InputLabel>
+          <Select
+            labelId="model-select-label"
+            value={selectedModel}
+            label="Model"
+            onChange={(e) => onModelChange(e.target.value as string)}
+          >
+            {AVAILABLE_MODELS.map((m) => (
+              <MenuItem key={m.model} value={m.model}>
+                {m.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <IconButton
+          size="small"
+          title="Clear all messages"
+          disabled={isLoading || numMessages === 0}
+          onClick={onDeleteChat}
+          sx={{
+            color: "text.secondary",
+            "&:hover": {
+              color: "error.main",
+            },
+          }}
         >
-          {AVAILABLE_MODELS.map((m) => (
-            <MenuItem key={m.model} value={m.model}>
-              {m.label}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+          <DeleteOutlineIcon fontSize="small" />
+        </IconButton>
+      </Box>
       <Box
         sx={{
           fontSize: "0.8rem",
@@ -227,6 +284,7 @@ const StatusBar: FunctionComponent<{
           ml: "auto",
           display: "flex",
           gap: 2,
+          alignItems: "center",
         }}
       >
         <span>

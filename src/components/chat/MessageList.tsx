@@ -11,6 +11,7 @@ type MessageListProps = {
   onSetToolCallApproval?: (toolCall: ORToolCall, approved: boolean) => void;
   height: number;
   onNeurosiftUrlUpdate?: (url: string) => void;
+  onDeleteMessage?: (index: number) => void;
 };
 
 const MessageList: FunctionComponent<MessageListProps> = ({
@@ -19,6 +20,7 @@ const MessageList: FunctionComponent<MessageListProps> = ({
   onSetToolCallApproval,
   height,
   onNeurosiftUrlUpdate,
+  onDeleteMessage,
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -49,18 +51,22 @@ const MessageList: FunctionComponent<MessageListProps> = ({
           return true;
         })
         .map((msg, index) => (
-          <>
+          <Box key={index}>
             <Message
-              key={index}
               message={msg}
               messages={messages}
               isUser={msg.role === "user"}
               onNeurosiftUrlUpdate={onNeurosiftUrlUpdate}
+              onDeleteMessage={
+                msg.role === "user" && onDeleteMessage
+                  ? () => onDeleteMessage(index)
+                  : undefined
+              }
             />
             {msg.role === "tool" && (
               <OutputImagesFromToolOutputContent content={msg.content} />
             )}
-          </>
+          </Box>
         ))}
       {toolCallForPermission && onSetToolCallApproval && (
         <ToolApprovalMessage

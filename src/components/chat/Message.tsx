@@ -1,4 +1,5 @@
-import { Box, Paper, Typography, Button } from "@mui/material";
+import { Box, Paper, Typography, IconButton, Button } from "@mui/material";
+import UndoIcon from "@mui/icons-material/Undo";
 import { FunctionComponent, PropsWithChildren, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -8,13 +9,17 @@ import { ORMessage } from "../../shared/openRouterTypes";
 
 type MessageContainerProps = {
   isUser: boolean;
+  onRewind?: () => void;
 };
 
 const MessageContainer: FunctionComponent<
   PropsWithChildren<MessageContainerProps>
-> = ({ children, isUser }) => {
+> = ({ children, isUser, onRewind }) => {
+  const [isHovered, setIsHovered] = useState(false);
   return (
     <Box
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       sx={(theme) => ({
         display: "flex",
         justifyContent: isUser ? "flex-end" : "flex-start",
@@ -22,6 +27,12 @@ const MessageContainer: FunctionComponent<
         padding: theme.spacing(0, 2),
       })}
     >
+      {onRewind && isHovered && (
+        <IconButton size="small" onClick={onRewind}>
+          <UndoIcon sx={{ color: "text.secondary", fontSize: 14, mt: 1 }} />
+          &nbsp;
+        </IconButton>
+      )}
       {children}
     </Box>
   );
@@ -70,6 +81,7 @@ type MessageProps = {
   messages: ORMessage[];
   isUser: boolean;
   onNeurosiftUrlUpdate?: (url: string) => void;
+  onDeleteMessage?: () => void;
 };
 
 const Message: FunctionComponent<MessageProps> = ({
@@ -77,6 +89,7 @@ const Message: FunctionComponent<MessageProps> = ({
   messages,
   isUser,
   onNeurosiftUrlUpdate,
+  onDeleteMessage,
 }) => {
   const findToolName = (toolCallId: string): string => {
     for (const msg of messages) {
@@ -371,7 +384,7 @@ const Message: FunctionComponent<MessageProps> = ({
   };
 
   return (
-    <MessageContainer isUser={isUser}>
+    <MessageContainer isUser={isUser} onRewind={onDeleteMessage}>
       <MessageBubble isUser={isUser} message={message}>
         {renderContent()}
       </MessageBubble>
