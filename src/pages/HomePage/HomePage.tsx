@@ -32,7 +32,7 @@ export const getGlobalAIContext = () => globalData.aiContext;
 const HomePage: FunctionComponent<HomePageProps> = ({ width, height }) => {
   const [searchParams] = useSearchParams();
   const iframeAppRef = useRef<IframeAppHandle>(null);
-  const appUrl = searchParams.get("app");
+  const appUrl = searchParams.get("app") || "https://neurosift.app";
   const navigate = useNavigate();
 
   const handleSendMessageToApp = useCallback((message: any) => {
