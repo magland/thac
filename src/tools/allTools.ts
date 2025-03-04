@@ -37,6 +37,9 @@ const convertApiToolToLocalFormat = (apiTool: Tool): NCTool => ({
       return `ERROR EXECUTING TOOL: ${result.error}`;
     } else {
       const r = result.results || "";
+      if (typeof r === "string") {
+        return JSON.stringify({ result: r }); // apparently it's important to return a dict
+      }
       return JSON.stringify(r);
     }
   },

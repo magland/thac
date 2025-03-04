@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Box, Paper, Typography, IconButton, Button } from "@mui/material";
 import UndoIcon from "@mui/icons-material/Undo";
 import { FunctionComponent, PropsWithChildren, useState } from "react";
@@ -247,7 +248,7 @@ const Message: FunctionComponent<MessageProps> = ({
                   },
                 }}
               >
-                {message.content}
+                {formatMessageContent(message.content)}
               </ReactMarkdown>
             </Box>
           )}
@@ -390,6 +391,19 @@ const Message: FunctionComponent<MessageProps> = ({
       </MessageBubble>
     </MessageContainer>
   );
+};
+
+const formatMessageContent = (x: any): string => {
+  try {
+    const content = JSON.parse(x);
+    if (!content) return content;
+    if (typeof content === "object") {
+      if (content.result) return content.result;
+    }
+  } catch {
+    return x;
+  }
+  return x;
 };
 
 export default Message;
