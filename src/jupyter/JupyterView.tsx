@@ -158,7 +158,7 @@ const JupyterView: FunctionComponent<JupyterViewProps> = ({
               }}
             >
               jupyter lab
-              --NotebookApp.allow_origin='https://neurosift-chat.vercel.app'
+              --NotebookApp.allow_origin='https://chat.neurosift.app'
               --no-browser --port={jupyterServerUrl.split(":")[2] || "8888"}
             </Box>
             After starting the server, click the retry button above to connect.
