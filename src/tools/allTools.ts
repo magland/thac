@@ -37,11 +37,7 @@ const convertApiToolToLocalFormat = (apiTool: Tool): NCTool => ({
       return `ERROR EXECUTING TOOL: ${result.error}`;
     } else {
       const r = result.results || "";
-      if (typeof r === "string") {
-        return r;
-      } else {
-        return JSON.stringify(r);
-      }
+      return JSON.stringify(r);
     }
   },
   detailedDescription: `
