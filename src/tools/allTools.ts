@@ -33,7 +33,16 @@ const convertApiToolToLocalFormat = (apiTool: Tool): NCTool => ({
     // context: ToolExecutionContext,
   ) => {
     const result = await executeToolCall(apiTool.name, params);
-    return JSON.stringify(result);
+    if (result.error) {
+      return `ERROR EXECUTING TOOL: ${result.error}`;
+    } else {
+      const r = result.results || "";
+      if (typeof r === "string") {
+        return r;
+      } else {
+        return JSON.stringify(r);
+      }
+    }
   },
   detailedDescription: `
 This is a dynamically loaded tool from the API.
