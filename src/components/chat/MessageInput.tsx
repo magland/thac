@@ -1,6 +1,6 @@
-import { IconButton, Paper, TextField } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
-import { FunctionComponent, KeyboardEvent, useState } from "react";
+import { IconButton, Paper, TextField } from "@mui/material";
+import { FunctionComponent, KeyboardEvent } from "react";
 
 type MessageInputProps = {
   currentPromptText: string;
