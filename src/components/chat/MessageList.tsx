@@ -11,7 +11,7 @@ type MessageListProps = {
   onSetToolCallApproval?: (toolCall: ORToolCall, approved: boolean) => void;
   height: number;
   onNeurosiftUrlUpdate?: (url: string) => void;
-  onDeleteMessage?: (index: number) => void;
+  onDeleteMessage?: (message: ORMessage) => void;
 };
 
 const MessageList: FunctionComponent<MessageListProps> = ({
@@ -59,7 +59,7 @@ const MessageList: FunctionComponent<MessageListProps> = ({
               onNeurosiftUrlUpdate={onNeurosiftUrlUpdate}
               onDeleteMessage={
                 msg.role === "user" && onDeleteMessage
-                  ? () => onDeleteMessage(index)
+                  ? () => onDeleteMessage(msg)
                   : undefined
               }
             />

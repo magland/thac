@@ -1,22 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Box, CircularProgress, Stack } from "@mui/material";
 import { FunctionComponent, useRef, useState } from "react";
-import {
-  Box,
-  IconButton,
-  CircularProgress,
-  FormControl,
-  Select,
-  MenuItem,
-  InputLabel,
-  Stack,
-} from "@mui/material";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import { ORMessage, ORToolCall } from "../../shared/openRouterTypes";
-import { sendChatMessage, AVAILABLE_MODELS } from "../../services/openRouter";
-import MessageList from "./MessageList";
-import MessageInput from "./MessageInput";
 import { useJupyterConnectivity } from "../../jupyter/JupyterConnectivity";
+import { AVAILABLE_MODELS, sendChatMessage } from "../../services/openRouter";
+import { ORMessage, ORToolCall } from "../../shared/openRouterTypes";
 import { getAllTools } from "../../tools/allTools";
+import { globalOutputItems } from "../../tools/tools/executePythonCode";
+import MessageInput from "./MessageInput";
+import MessageList from "./MessageList";
+import StatusBar from "./StatusBar";
 
 type ChatInterfaceProps = {
   width: number;
@@ -134,6 +126,62 @@ const ChatInterface: FunctionComponent<ChatInterfaceProps> = ({
     }
   };
 
+  const handleUploadChat = (chatData: any) => {
+    // Validate uploaded data structure
+    if (!chatData.messages || !Array.isArray(chatData.messages)) {
+      alert("Invalid chat data: missing or invalid messages array");
+      return;
+    }
+
+    // Handle files if present
+    const nonImageFiles: string[] = [];
+    if (chatData.files) {
+      for (const [key, value] of Object.entries(chatData.files)) {
+        if (typeof value === "string" && value.startsWith("base64:")) {
+          const base64Content = value.substring(7);
+          const fileExtension = key.split(".").pop()?.toLowerCase();
+
+          if (fileExtension === "png") {
+            globalOutputItems[key] = {
+              type: "image",
+              format: "png",
+              content: base64Content,
+            };
+          } else {
+            nonImageFiles.push(key);
+          }
+        }
+      }
+    }
+
+    // Update chat state
+    setMessages(chatData.messages);
+    setPendingMessages(undefined);
+    setToolCallForPermission(undefined);
+    approvedToolCalls.current = [];
+
+    // Update metadata if available
+    if (chatData.metadata) {
+      if (chatData.metadata.tokensUp) setTokensUp(chatData.metadata.tokensUp);
+      if (chatData.metadata.tokensDown)
+        setTokensDown(chatData.metadata.tokensDown);
+      if (chatData.metadata.totalCost) setCost(chatData.metadata.totalCost);
+      if (
+        chatData.metadata.model &&
+        AVAILABLE_MODELS.some((m) => m.model === chatData.metadata.model)
+      ) {
+        setSelectedModel(chatData.metadata.model);
+      }
+    }
+
+    // Show warning for non-image files
+    if (nonImageFiles.length > 0) {
+      alert(
+        `Warning: The following files were not loaded because they are not PNG images: ${nonImageFiles.join(", ")}`,
+      );
+    }
+  };
+
   const handleDeleteChat = () => {
     const confirmed = window.confirm(
       "Are you sure you want to delete the entire chat?",
@@ -148,6 +196,8 @@ const ChatInterface: FunctionComponent<ChatInterfaceProps> = ({
     setTokensDown(0);
     setCost(0);
   };
+
+  const [currentPromptText, setCurrentPromptText] = useState("");
 
   return (
     <Box
@@ -169,23 +219,34 @@ const ChatInterface: FunctionComponent<ChatInterfaceProps> = ({
         onNeurosiftUrlUpdate={onNeurosiftUrlUpdate}
         onDeleteMessage={
           !isLoading
-            ? (index) => {
+            ? (msg) => {
                 const confirmed = window.confirm(
                   "Are you sure you want to delete this message and all subsequent messages?",
                 );
                 if (!confirmed) {
                   return;
                 }
+                const messageIndex = messages.findIndex((m) => m === msg);
+                const index =
+                  messageIndex === -1 ? messages.length : messageIndex;
                 setMessages(messages.slice(0, index));
                 setPendingMessages(undefined);
                 setToolCallForPermission(undefined);
                 approvedToolCalls.current = [];
+                setCurrentPromptText(
+                  typeof msg.content === "string" ? msg.content : "",
+                );
               }
             : undefined
         }
       />
       <Stack spacing={1} sx={{ p: 1 }}>
-        <MessageInput onSendMessage={handleSendMessage} disabled={isLoading} />
+        <MessageInput
+          currentPromptText={currentPromptText}
+          setCurrentPromptText={setCurrentPromptText}
+          onSendMessage={handleSendMessage}
+          disabled={isLoading}
+        />
         {isLoading && (
           <CircularProgress size={20} sx={{ alignSelf: "center" }} />
         )}
@@ -197,102 +258,10 @@ const ChatInterface: FunctionComponent<ChatInterfaceProps> = ({
         tokensDown={tokensDown}
         totalCost={cost}
         isLoading={isLoading}
-        numMessages={messages.length}
+        messages={messages}
         onDeleteChat={handleDeleteChat}
+        onUploadChat={handleUploadChat}
       />
-    </Box>
-  );
-};
-
-const StatusBar: FunctionComponent<{
-  selectedModel: string;
-  onModelChange: (model: string) => void;
-  tokensUp?: number;
-  tokensDown?: number;
-  totalCost?: number;
-  isLoading?: boolean;
-  numMessages?: number;
-  onDeleteChat?: () => void;
-}> = ({
-  selectedModel,
-  onModelChange,
-  tokensUp = 0,
-  tokensDown = 0,
-  totalCost = 0,
-  isLoading = false,
-  numMessages = 0,
-  onDeleteChat,
-}) => {
-  return (
-    <Box
-      sx={{
-        p: 0.5,
-        borderTop: 1,
-        borderColor: "divider",
-        display: "flex",
-        alignItems: "center",
-        gap: 2,
-      }}
-    >
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        <FormControl
-          size="small"
-          sx={{
-            minWidth: 150,
-            "& .MuiInputLabel-root": { fontSize: "0.8rem" },
-            "& .MuiSelect-select": { fontSize: "0.8rem", py: 0.5 },
-          }}
-        >
-          <InputLabel
-            id="model-select-label"
-            sx={{ backgroundColor: "background.paper", px: 0.25 }}
-          >
-            Model
-          </InputLabel>
-          <Select
-            labelId="model-select-label"
-            value={selectedModel}
-            label="Model"
-            onChange={(e) => onModelChange(e.target.value as string)}
-          >
-            {AVAILABLE_MODELS.map((m) => (
-              <MenuItem key={m.model} value={m.model}>
-                {m.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <IconButton
-          size="small"
-          title="Clear all messages"
-          disabled={isLoading || numMessages === 0}
-          onClick={onDeleteChat}
-          sx={{
-            color: "text.secondary",
-            "&:hover": {
-              color: "error.main",
-            },
-          }}
-        >
-          <DeleteOutlineIcon fontSize="small" />
-        </IconButton>
-      </Box>
-      <Box
-        sx={{
-          fontSize: "0.8rem",
-          color: "text.secondary",
-          ml: "auto",
-          display: "flex",
-          gap: 2,
-          alignItems: "center",
-        }}
-      >
-        <span>
-          ↑{(tokensUp / 1000).toFixed(1)}k ↓{(tokensDown / 1000).toFixed(1)}k
-          tokens
-        </span>
-        <span>${totalCost.toFixed(3)}</span>
-      </Box>
     </Box>
   );
 };

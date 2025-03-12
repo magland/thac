@@ -5,6 +5,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import remarkGfm from "remark-gfm";
 import { vs as highlightStyle } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { ORToolCall } from "../../shared/openRouterTypes";
+import { useJupyterConnectivity } from "../../jupyter/JupyterConnectivity";
 
 type ToolApprovalMessageContainerProps = {
   children: React.ReactNode;
@@ -60,6 +61,7 @@ const ToolApprovalMessage: FunctionComponent<ToolApprovalMessageProps> = ({
   toolCallForPermission,
   onSetToolCallApproval,
 }) => {
+  const { jupyterServerIsAvailable } = useJupyterConnectivity();
   return (
     <ToolApprovalMessageContainer>
       <ToolApprovalMessageBubble>
@@ -109,14 +111,23 @@ const ToolApprovalMessage: FunctionComponent<ToolApprovalMessageProps> = ({
             >
               Deny
             </Button>
-            <Button
-              size="small"
-              variant="contained"
-              color="success"
-              onClick={() => onSetToolCallApproval(toolCallForPermission, true)}
-            >
-              Approve
-            </Button>
+            {jupyterServerIsAvailable ? (
+              <Button
+                size="small"
+                variant="contained"
+                color="success"
+                onClick={() =>
+                  onSetToolCallApproval(toolCallForPermission, true)
+                }
+              >
+                Approve
+              </Button>
+            ) : (
+              <>
+                Jupyter server is not available. Use the JUPYTER tab to
+                configure the server.
+              </>
+            )}
           </Box>
         </Box>
       </ToolApprovalMessageBubble>

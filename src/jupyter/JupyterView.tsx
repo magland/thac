@@ -39,6 +39,8 @@ const JupyterView: FunctionComponent<JupyterViewProps> = ({
     }
   }, [jupyterConnectivity]);
 
+  const originToAllow = window.location.origin;
+
   return (
     <Box
       sx={{
@@ -101,7 +103,7 @@ const JupyterView: FunctionComponent<JupyterViewProps> = ({
             size="small"
             startIcon={<RefreshIcon />}
             onClick={refreshJupyter}
-            color={jupyterServerIsAvailable ? "success" : "error"}
+            color={jupyterServerIsAvailable ? "success" : undefined}
           >
             {jupyterServerIsAvailable
               ? "Connected - Click to Refresh"
@@ -157,8 +159,8 @@ const JupyterView: FunctionComponent<JupyterViewProps> = ({
                 fontSize: "0.8rem",
               }}
             >
-              jupyter lab
-              --NotebookApp.allow_origin='https://chat.neurosift.app'
+              jupyter lab --NotebookApp.allow_origin='{originToAllow}'
+              --NotebookApp.token='' --NotebookApp.disable_check_xsrf="True"
               --no-browser --port={jupyterServerUrl.split(":")[2] || "8888"}
             </Box>
             After starting the server, click the retry button above to connect.

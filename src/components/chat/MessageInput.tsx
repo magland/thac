@@ -3,16 +3,20 @@ import SendIcon from "@mui/icons-material/Send";
 import { FunctionComponent, KeyboardEvent, useState } from "react";
 
 type MessageInputProps = {
+  currentPromptText: string;
+  setCurrentPromptText: (text: string) => void;
   onSendMessage: (message: string) => void;
   disabled?: boolean;
 };
 
 const MessageInput: FunctionComponent<MessageInputProps> = ({
+  currentPromptText,
+  setCurrentPromptText,
   onSendMessage,
   disabled = false,
 }) => {
-  const [message, setMessage] = useState("");
-
+  const message = currentPromptText;
+  const setMessage = setCurrentPromptText;
   const handleSend = () => {
     if (message.trim() && !disabled) {
       onSendMessage(message.trim());

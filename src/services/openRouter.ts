@@ -55,6 +55,9 @@ The following specialized tools are available.
     d += a.detailedDescription;
     d += "\n\n";
   }
+  d += `
+If you generate a script to create a plot, your response should be a suitable caption for the plot.
+`;
 
   return d;
 };

@@ -87,7 +87,7 @@ const HomePage: FunctionComponent<HomePageProps> = ({ width, height }) => {
     <HorizontalSplitter
       width={width}
       height={height}
-      initialSplitterPosition={Math.max(400, Math.min(250, width * 0.3))}
+      initialSplitterPosition={Math.max(250, Math.min(600, width * 0.3))}
       children={[
         <TabPanel
           key="chat"

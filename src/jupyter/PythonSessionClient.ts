@@ -178,10 +178,12 @@ class PythonSessionClient {
         throw Error("Unexpected mode:" + this.jupyterConnectivityState.mode);
       }
     } catch (err: any) {
+      console.error("Error initiating", err);
       kernel.statusChanged.disconnect(onStatusChanged);
       kernel.iopubMessage.disconnect(onIopubMessage);
       if (this.#kernelManager) {
-        // this.#kernelManager.shutdownAll();
+        this.#kernelManager.shutdownAll();
+        this.#kernelManager.dispose();
         this.#kernel = undefined;
         this.#kernelManager = undefined;
       }
@@ -194,14 +196,14 @@ class PythonSessionClient {
   }
   async shutdown() {
     if (this.jupyterConnectivityState.mode === "jupyter-server") {
-      // if (this.#kernelManager) {
-      //   await this.#kernelManager.shutdownAll();
-      // } else if (this.#kernel) {
-      //   await this.#kernel.shutdown();
-      // }
-      if (this.#kernel) {
+      if (this.#kernelManager) {
+        await this.#kernelManager.shutdownAll();
+        await this.#kernelManager.dispose();
+      } else if (this.#kernel) {
         await this.#kernel.shutdown();
       }
+      this.#kernel = undefined;
+      this.#kernelManager = undefined;
     } else {
       // disconnect the slots
       if (this.#kernel) {
@@ -223,7 +225,7 @@ class PythonSessionClient {
         console.error("Error initiating", err);
         const errMessages = [
           "Error initiating python session. You need to have a jupyter server running on http://localhost:8888 and allow access to neurosift.",
-          "Run: jupyter lab --NotebookApp.allow_origin='https://neurosift.app' --no-browser",
+          "Follow the instructions in the Jupyter tab of the chat window.",
         ];
         for (const errMessage of errMessages) {
           const item: PythonSessionOutputItem = {
