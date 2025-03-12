@@ -10,9 +10,10 @@ import {
   MenuItem,
   Select,
 } from "@mui/material";
-import { FunctionComponent } from "react";
-import { AVAILABLE_MODELS } from "../../services/openRouter";
 import { ORMessage } from "@shared/openRouterTypes";
+import { FunctionComponent, useEffect, useMemo } from "react";
+import { chatGlobalData } from "../../pages/HomePage/HomePage";
+import { AVAILABLE_MODELS } from "../../services/openRouter";
 import { globalOutputItems } from "../../tools/tools/executePythonCode";
 
 const StatusBar: FunctionComponent<{
@@ -37,6 +38,36 @@ const StatusBar: FunctionComponent<{
   onUploadChat,
 }) => {
   const numMessages = messages.length;
+
+  const chatData = useMemo(() => {
+    const messagesJson = JSON.stringify(messages, null, 2);
+    const files: { [key: string]: string } = {};
+    for (const k in globalOutputItems) {
+      if (messagesJson.includes(k)) {
+        const item = globalOutputItems[k];
+        if (item.type === "image") {
+          files[k] = `base64:${item.content}`;
+        }
+      }
+    }
+    const chatData = {
+      timestamp: new Date().toISOString(),
+      messages: messages,
+      files,
+      metadata: {
+        model: selectedModel,
+        tokensUp,
+        tokensDown,
+        totalCost,
+        messageCount: messages.length,
+      },
+    };
+    return chatData;
+  }, [messages, selectedModel, tokensUp, tokensDown, totalCost]);
+  useEffect(() => {
+    chatGlobalData.chatJson = JSON.stringify(chatData);
+  }, [chatData]);
+
   return (
     <Box
       sx={{
@@ -110,29 +141,6 @@ const StatusBar: FunctionComponent<{
           size="small"
           title="Download chat"
           onClick={() => {
-            const messagesJson = JSON.stringify(messages, null, 2);
-            const files: { [key: string]: string } = {};
-            for (const k in globalOutputItems) {
-              if (messagesJson.includes(k)) {
-                const item = globalOutputItems[k];
-                if (item.type === "image") {
-                  files[k] = `base64:${item.content}`;
-                }
-              }
-            }
-            const chatData = {
-              timestamp: new Date().toISOString(),
-              messages: messages,
-              files,
-              metadata: {
-                model: selectedModel,
-                tokensUp,
-                tokensDown,
-                totalCost,
-                messageCount: messages.length,
-              },
-            };
-
             const blob = new Blob([JSON.stringify(chatData, null, 2)], {
               type: "application/json",
             });

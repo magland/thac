@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Box, CircularProgress, Stack } from "@mui/material";
-import { FunctionComponent, useRef, useState } from "react";
+import { FunctionComponent, useEffect, useRef, useState } from "react";
+import { chatGlobalData } from "../../pages/HomePage/HomePage";
 import { useJupyterConnectivity } from "../../jupyter/JupyterConnectivity";
 import { AVAILABLE_MODELS, sendChatMessage } from "../../services/openRouter";
 import { ORMessage, ORToolCall } from "../../shared/openRouterTypes";
@@ -181,6 +182,12 @@ const ChatInterface: FunctionComponent<ChatInterfaceProps> = ({
       );
     }
   };
+
+  useEffect(() => {
+    chatGlobalData.setChatFromIframe = (chatJson: string) => {
+      handleUploadChat(JSON.parse(chatJson));
+    };
+  }, []);
 
   const handleDeleteChat = () => {
     const confirmed = window.confirm(

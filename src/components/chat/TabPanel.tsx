@@ -1,9 +1,9 @@
-import { FunctionComponent, useState } from "react";
+import { FunctionComponent, useEffect, useState } from "react";
 import { Box, Tabs, Tab } from "@mui/material";
 import ChatInterface from "./ChatInterface";
 import ContextView from "./ContextView";
 import { AIContext } from "../../pages/HomePage/HomePage";
-import { AICallbackMessage } from "../../pages/HomePage/types";
+import { AICallbackMessage, AIMessage } from "../../pages/HomePage/types";
 import { useJupyterConnectivity } from "../../jupyter/JupyterConnectivity";
 import JupyterView from "../../jupyter/JupyterView";
 
@@ -33,7 +33,7 @@ type TabPanelProps = {
   width: number;
   height: number;
   context: AIContext | undefined;
-  onSendMessageToApp?: (message: AICallbackMessage) => void;
+  onSendMessageToApp?: (message: AIMessage) => void;
   onNeurosiftUrlUpdate?: (url: string) => void;
 };
 

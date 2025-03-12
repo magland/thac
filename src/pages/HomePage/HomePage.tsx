@@ -29,6 +29,14 @@ const globalData: {
 };
 export const getGlobalAIContext = () => globalData.aiContext;
 
+export const chatGlobalData: {
+  setChatFromIframe?: (chatJson: string) => void;
+  chatJson?: string;
+} = {
+  setChatFromIframe: undefined,
+  chatJson: undefined,
+};
+
 const HomePage: FunctionComponent<HomePageProps> = ({ width, height }) => {
   const [searchParams] = useSearchParams();
   const iframeAppRef = useRef<IframeAppHandle>(null);
@@ -41,8 +49,16 @@ const HomePage: FunctionComponent<HomePageProps> = ({ width, height }) => {
 
   const [, setRefreshCode] = useState(0);
 
+  const sentReportToIframe = useRef(false);
+
   const handleIframeMessage = useCallback(
     (message: any) => {
+      if (sentReportToIframe.current === false) {
+        sentReportToIframe.current = true;
+        handleSendMessageToApp({
+          type: "reportNeurosiftChat",
+        });
+      }
       if (message.type === "aiContextUpdate") {
         globalData.aiContext = {
           title: message.title || "Untitled",
@@ -59,6 +75,22 @@ const HomePage: FunctionComponent<HomePageProps> = ({ width, height }) => {
         appUrl = appUrl.replace(/&/g, "%26");
 
         navigate(`?app=${appUrl}`, { replace: true });
+      } else if (message.type === "setChat") {
+        if (!chatGlobalData.setChatFromIframe) {
+          console.error("No setChtToIframe");
+          return;
+        }
+        chatGlobalData.setChatFromIframe(message.chatJson);
+      } else if (message.type === "requestChat") {
+        console.info("Chat requested");
+        if (!chatGlobalData.chatJson) {
+          console.error("No chatJson");
+          return;
+        }
+        handleSendMessageToApp({
+          type: "reportChat",
+          chatJson: chatGlobalData.chatJson,
+        });
       }
     },
     [navigate],
