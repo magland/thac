@@ -1,11 +1,11 @@
-import { FunctionComponent, useEffect, useState } from "react";
-import { Box, Tabs, Tab } from "@mui/material";
-import ChatInterface from "./ChatInterface";
-import ContextView from "./ContextView";
-import { AIContext } from "../../pages/HomePage/HomePage";
-import { AICallbackMessage, AIMessage } from "../../pages/HomePage/types";
+import { Box, Tab, Tabs } from "@mui/material";
+import { FunctionComponent, useState } from "react";
 import { useJupyterConnectivity } from "../../jupyter/JupyterConnectivity";
 import JupyterView from "../../jupyter/JupyterView";
+import { AIContext } from "../../pages/HomePage/HomePage";
+import { AIMessage } from "../../pages/HomePage/types";
+import ChatInterface from "./ChatInterface";
+import ContextView from "./ContextView";
 
 interface TabPanelWrapperProps {
   children?: React.ReactNode;
